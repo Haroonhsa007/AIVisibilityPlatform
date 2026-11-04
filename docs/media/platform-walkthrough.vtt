@@ -1,56 +1,56 @@
 WEBVTT
 
-00:00:00.118 --> 00:00:07.795
+00:00:00.088 --> 00:00:05.843
 Offline demo · real API, queue and database · no live provider key
 
-00:00:07.795 --> 00:00:13.216
+00:00:05.843 --> 00:00:09.209
 Create a profile using a bare domain and competitor chips
 
-00:00:13.216 --> 00:00:27.736
+00:00:09.209 --> 00:00:18.224
 The form rejects URLs: store surferseo.com, without https://
 
-00:00:27.736 --> 00:00:30.785
+00:00:18.224 --> 00:00:20.117
 The new profile has no queries until its first run
 
-00:00:30.785 --> 00:00:37.691
+00:00:20.117 --> 00:00:26.467
 Run pipeline returns 202; an RQ worker persists progress and results
 
-00:00:37.691 --> 00:00:42.752
+00:00:26.467 --> 00:00:31.122
 Fake-provider result: 12 queries, 3 recommendations and 750 tokens
 
-00:00:42.752 --> 00:00:51.422
+00:00:31.122 --> 00:00:38.128
 Filters and sorting are server-side; state stays in the URL
 
-00:00:51.422 --> 00:00:58.970
+00:00:38.128 --> 00:00:44.228
 Page two shows the remaining 2 queries
 
-00:00:58.970 --> 00:01:05.369
+00:00:44.228 --> 00:00:49.399
 Not visible narrows the list to missing-visibility opportunities
 
-00:01:05.369 --> 00:01:13.672
+00:00:49.399 --> 00:00:56.899
 Recheck refreshes a single row without reloading the table
 
-00:01:13.672 --> 00:01:21.312
+00:00:56.899 --> 00:01:03.498
 CSV includes every filtered page, with UTF-8 BOM and formula guards
 
-00:01:21.312 --> 00:01:28.982
+00:01:03.498 --> 00:01:09.265
 Orange means not visible; blue means visible. Scores range from 0 to 1.
 
-00:01:28.982 --> 00:01:35.319
+00:01:09.265 --> 00:01:14.100
 Chart axes, controls and content follow the selected theme
 
-00:01:35.319 --> 00:01:47.276
+00:01:14.100 --> 00:01:23.584
 Content ideas include priority, rationale, a target query and keywords
 
-00:01:47.276 --> 00:01:51.355
+00:01:23.584 --> 00:01:26.823
 The dashboard now summarizes the persisted profile and completed run
 
-00:01:51.355 --> 00:01:59.439
+00:01:26.823 --> 00:01:34.408
 Frontend reads persisted state; workers own the three-agent workflow
 
-00:01:59.439 --> 00:02:07.441
+00:01:34.408 --> 00:01:41.924
 Validated output leads to completed, partial or failed runs
 
-00:02:07.441 --> 00:02:17.360
+00:01:41.924 --> 00:01:51.240
 Read docs/WALKTHROUGH.md for the ten-minute frontend and backend guide
 

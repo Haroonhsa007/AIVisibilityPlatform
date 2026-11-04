@@ -2,7 +2,7 @@
 
 Flask 3 API with SQLAlchemy 2, PostgreSQL/SQLite, Pydantic-validated agents and
 Redis/RQ background execution. The backend implements every endpoint in
-`../Context/api-contract/openapi.yaml`. All discovery, volume, difficulty and
+`../docs/api/openapi.yaml`. All discovery, volume, difficulty and
 visibility results are **LLM estimates**, not observed searches or live AI-answer
 measurements. Query responses include `data_source: "llm_estimate"`.
 
@@ -251,7 +251,7 @@ BASE_URL=http://localhost:5000 bash scripts/smoke.sh
 
 Tests use SQLite, fakeredis, FakeLLMClient and mocked SDKs. A global HTTPX guard
 prevents accidental real provider requests. Coverage is gated at 85%. Contract
-conformance loads `Context/api-contract/openapi.yaml` relative to the tests and
+conformance loads `docs/api/openapi.yaml` (tracked in git so CI can read it) relative to the tests and
 handles OpenAPI 3.0 nullable semantics. CI checks out the full repository, runs
 lint/format/tests/coverage on Python 3.12 and builds the runtime image.
 

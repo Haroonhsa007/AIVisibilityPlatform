@@ -429,3 +429,5 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python,flask,angular,node
 
 Context/
+LOOM_*
+trans*

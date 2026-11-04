@@ -1,9 +1,9 @@
 name: Frontend
 on:
   push:
-    paths: ["frontend/**", "Context/api-contract/**", "docker-compose.yml", ".github/workflows/frontend.yml"]
+    paths: ["frontend/**", "docs/api/**", "docker-compose.yml", ".github/workflows/frontend.yml"]
   pull_request:
-    paths: ["frontend/**", "Context/api-contract/**", "docker-compose.yml", ".github/workflows/frontend.yml"]
+    paths: ["frontend/**", "docs/api/**", "docker-compose.yml", ".github/workflows/frontend.yml"]
 permissions:
   contents: read
 jobs:

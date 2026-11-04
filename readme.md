@@ -6,11 +6,17 @@ A fresh checkout uses a deterministic fake provider and runs without an API key.
 
 ## Watch the workflow
 
-[Watch the captioned product tour (MP4)](docs/media/platform-walkthrough.mp4) · [Open the chaptered player](docs/demo/index.html)
+<video controls playsinline preload="metadata" width="960" style="max-width:100%;height:auto;" poster="docs/screenshots/09-dashboard-results.png" aria-label="AI Visibility product walkthrough with narration">
+  <source src="docs/media/platform-walkthrough.mp4" type="video/mp4" />
+  <track kind="captions" src="docs/media/voiceover.vtt" srclang="en" label="English narration" />
+  <a href="docs/media/platform-walkthrough.mp4">Watch or download the narrated MP4</a>.
+</video>
 
-The recording follows a real browser through an isolated fake-provider stack: empty dashboard → profile validation → queued pipeline → queries and filters → recheck/export → chart/themes → recommendations → architecture. It uses a separate database and no live API key. Captions are included in the picture; there is no voice track.
+[Watch or download the narrated MP4](docs/media/platform-walkthrough.mp4) · [Open the chaptered player](docs/demo/index.html)
 
-Open `docs/demo/index.html` directly, or serve the player with nginx for reliable chapter seeking:
+The recording follows a real browser through an isolated fake-provider stack: empty dashboard → profile validation → queued pipeline → queries and filters → recheck/export → chart/themes → recommendations → architecture. It uses a separate database and no live API key. The 1:51 video includes the supplied voiceover, on-screen captions and nine chapters. Screen timings follow the narration; the original voice speed and pitch are preserved.
+
+Inline playback depends on the Markdown viewer. Use the direct MP4 link or chaptered player if the embedded controls are unavailable. Open `docs/demo/index.html` directly, or serve the player with nginx for reliable chapter seeking:
 
 ```sh
 docker run --rm -p 127.0.0.1:8000:80 \
@@ -21,7 +27,6 @@ docker run --rm -p 127.0.0.1:8000:80 \
 | Read or view                                                                      | Purpose                                                                               |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | [Ten-minute technical walkthrough](docs/WALKTHROUGH.md)                           | How frontend state, API contracts, workers, agents, scoring and recovery fit together |
-| [Ten-minute Loom script](docs/LOOM_SCRIPT.md)                                     | Read-aloud narration with screen actions and timing                                   |
 | [Architecture and pipeline diagrams](docs/diagrams/README.md)                     | System boundaries and persisted run lifecycle                                         |
 | [Ordered still frames](docs/screenshots/README.md)                                | An accessible step-by-step alternative to the recording                               |
 | [Backend reference](backend/README.md) / [frontend reference](frontend/README.md) | Setup, implementation and verification detail                                         |

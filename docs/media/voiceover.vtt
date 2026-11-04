@@ -1,0 +1,68 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:05.200
+Let's take a look at AI Visibility and turn a few questions into a useful content plan.
+
+00:00:05.840 --> 00:00:10.280
+First, add your business name, domain, industry, and a short description.
+
+00:00:11.060 --> 00:00:14.620
+Then, add your competitors. The form checks your details as you go.
+
+00:00:15.120 --> 00:00:19.440
+It's a little particular about domains, but that saves us some cleanup later.
+
+00:00:20.100 --> 00:00:25.460
+Now, let's run the pipeline. A background worker handles the job while the page follows its progress.
+
+00:00:26.020 --> 00:00:30.200
+In this offline demo, we get 12 questions and three content recommendations.
+
+00:00:31.140 --> 00:00:36.540
+Here's where we start exploring. The table shows estimated demand, difficulty, opportunity,
+
+00:00:37.020 --> 00:00:42.880
+and visibility. Sort the results, browse the pages, or focus on questions where the business is missing.
+
+00:00:43.520 --> 00:00:48.500
+Looking for stronger opportunities? Raise the minimum score. Your selections stay in the URL.
+
+00:00:49.400 --> 00:00:52.900
+Want to revisit a result? Recheck updates just that question.
+
+00:00:52.900 --> 00:00:58.100
+And when you export, you get every filtered result, including anything beyond the current page.
+
+00:00:58.640 --> 00:01:01.260
+One less reason to copy and paste between spreadsheets.
+
+00:01:02.000 --> 00:01:04.100
+The chart makes those patterns easier to see.
+
+00:01:04.740 --> 00:01:08.120
+Orange marks missing visibility. Blue marks visible results.
+
+00:01:09.040 --> 00:01:11.900
+Switch the theme and the chart updates along with the rest of the interface.
+
+00:01:12.760 --> 00:01:17.500
+Next, come the recommendations. Each idea includes a priority, a target question,
+
+00:01:17.500 --> 00:01:23.380
+keywords, and an explanation of why it could help. Filter by priority, explore the ideas,
+
+00:01:23.920 --> 00:01:29.180
+then use the back arrow to return to your overview. Behind the scenes, Angular connects to Flask.
+
+00:01:29.880 --> 00:01:33.820
+Queued workers handle the processing and save progress and results in Postgres.
+
+00:01:34.400 --> 00:01:39.540
+Three agents discover, score, and recommend, with their outputs validated before storage.
+
+00:01:40.280 --> 00:01:44.960
+These are model estimates, so human judgment still matters. The aim is simple.
+
+00:01:44.960 --> 00:01:49.420
+A clearer picture, a sensible next step, and a little less guesswork.
+

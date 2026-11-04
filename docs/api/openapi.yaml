@@ -1,0 +1,206 @@
+openapi: 3.0.3
+info:
+  title: AI Visibility Intelligence API
+  version: 1.0.0
+  description: Authoritative contract. Backend implements it, frontend TypeScript interfaces mirror it. Change here first.
+servers:
+  - url: http://localhost:5000
+paths:
+  /api/v1/health:
+    get:
+      summary: Liveness + dependency check
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { type: object, properties: { status: { type: string, example: ok }, database: { type: string }, queue: { type: string } } } } } }
+  /api/v1/dashboard:
+    get:
+      summary: Aggregate stats + recent runs
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/Dashboard' } } } }
+  /api/v1/profiles:
+    get:
+      summary: List profiles (newest first)
+      parameters:
+        - { in: query, name: page, schema: { type: integer, default: 1 } }
+        - { in: query, name: per_page, schema: { type: integer, default: 20, maximum: 100 } }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/ProfilePage' } } } }
+    post:
+      summary: Create a business profile
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ProfileCreate' } } }
+      responses:
+        '201': { description: created, content: { application/json: { schema: { $ref: '#/components/schemas/Profile' } } } }
+        '409': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /api/v1/profiles/{profile_uuid}:
+    get:
+      summary: Fetch a profile (includes latest_run when present)
+      parameters: [ { $ref: '#/components/parameters/ProfileUuid' } ]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/Profile' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/v1/profiles/{profile_uuid}/run:
+    post:
+      summary: Start the pipeline (async). Returns immediately with a queued run.
+      parameters: [ { $ref: '#/components/parameters/ProfileUuid' } ]
+      responses:
+        '202': { description: accepted, content: { application/json: { schema: { $ref: '#/components/schemas/PipelineRun' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { description: a run is already queued or running, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+  /api/v1/profiles/{profile_uuid}/runs:
+    get:
+      summary: Runs for a profile, newest first
+      parameters: [ { $ref: '#/components/parameters/ProfileUuid' } ]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/PipelineRun' } } } } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/v1/runs/{run_uuid}:
+    get:
+      summary: Poll a run
+      parameters: [ { in: path, name: run_uuid, required: true, schema: { type: string, format: uuid } } ]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/PipelineRun' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/v1/profiles/{profile_uuid}/queries:
+    get:
+      summary: Paginated discovered queries
+      parameters:
+        - { $ref: '#/components/parameters/ProfileUuid' }
+        - { in: query, name: min_score, schema: { type: number, minimum: 0, maximum: 1 } }
+        - { in: query, name: status, schema: { type: string, enum: [visible, not_visible, unknown] } }
+        - { in: query, name: page, schema: { type: integer, default: 1 } }
+        - { in: query, name: per_page, schema: { type: integer, default: 20, maximum: 100 } }
+        - { in: query, name: sort, schema: { type: string, enum: [opportunity_score, estimated_search_volume, competitive_difficulty, discovered_at], default: opportunity_score } }
+        - { in: query, name: order, schema: { type: string, enum: [asc, desc], default: desc } }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/QueryPage' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /api/v1/profiles/{profile_uuid}/recommendations:
+    get:
+      summary: Recommendations (high priority first)
+      parameters:
+        - { $ref: '#/components/parameters/ProfileUuid' }
+        - { in: query, name: priority, schema: { type: string, enum: [high, medium, low] } }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Recommendation' } } } } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/v1/queries/{query_uuid}/recheck:
+    post:
+      summary: Re-score one query synchronously
+      parameters: [ { in: path, name: query_uuid, required: true, schema: { type: string, format: uuid } } ]
+      responses:
+        '200': { description: updated query, content: { application/json: { schema: { $ref: '#/components/schemas/Query' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+        '502': { description: LLM upstream failure; row unchanged, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+components:
+  parameters:
+    ProfileUuid: { in: path, name: profile_uuid, required: true, schema: { type: string, format: uuid } }
+  responses:
+    Error: { description: error, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+  schemas:
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, enum: [bad_request, validation_error, not_found, conflict, upstream_error, internal_error] }
+            message: { type: string }
+            details: { type: object, additionalProperties: true, description: 'field -> message map for validation_error' }
+    ProfileCreate:
+      type: object
+      required: [name, domain, industry]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        domain: { type: string, example: surferseo.com, description: 'lowercase host, no scheme/path' }
+        industry: { type: string, maxLength: 120 }
+        description: { type: string, maxLength: 1000 }
+        competitors: { type: array, maxItems: 10, items: { type: string, description: 'same domain rule' } }
+    Profile:
+      allOf:
+        - $ref: '#/components/schemas/ProfileCreate'
+        - type: object
+          required: [profile_uuid, status, created_at, updated_at]
+          properties:
+            profile_uuid: { type: string, format: uuid }
+            status: { type: string, enum: [new, running, completed, failed] }
+            created_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+            latest_run: { allOf: [ { $ref: '#/components/schemas/PipelineRun' } ], nullable: true }
+    ProfilePage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Profile' } }
+        page: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+        pages: { type: integer }
+    PipelineRun:
+      type: object
+      required: [run_uuid, profile_uuid, status, queries_discovered, queries_scored, tokens_used]
+      properties:
+        run_uuid: { type: string, format: uuid }
+        profile_uuid: { type: string, format: uuid }
+        status: { type: string, enum: [queued, running, completed, partial, failed] }
+        stage: { type: string, nullable: true, enum: [discovery, scoring, recommendations] }
+        queries_discovered: { type: integer }
+        queries_scored: { type: integer }
+        recommendations_created: { type: integer }
+        tokens_used: { type: integer }
+        error_message: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        started_at: { type: string, format: date-time, nullable: true }
+        completed_at: { type: string, format: date-time, nullable: true }
+        profile_name: { type: string, description: 'only populated on /dashboard recent_runs' }
+    Query:
+      type: object
+      required: [query_uuid, profile_uuid, run_uuid, query_text, opportunity_score, domain_visible, visibility_position, discovered_at]
+      properties:
+        query_uuid: { type: string, format: uuid }
+        profile_uuid: { type: string, format: uuid }
+        run_uuid: { type: string, format: uuid }
+        query_text: { type: string }
+        estimated_search_volume: { type: integer, nullable: true }
+        competitive_difficulty: { type: integer, minimum: 0, maximum: 100, nullable: true }
+        opportunity_score: { type: number, minimum: 0, maximum: 1, nullable: true }
+        domain_visible: { type: boolean, nullable: true, description: 'null = unknown / not scored' }
+        visibility_position: { type: integer, nullable: true }
+        visibility_status: { type: string, enum: [visible, not_visible, unknown] }
+        cited_domains: { type: array, items: { type: string } }
+        data_source: { type: string, enum: [llm_estimate], description: 'volume/difficulty/visibility are model estimates' }
+        discovered_at: { type: string, format: date-time }
+        last_checked_at: { type: string, format: date-time, nullable: true }
+    QueryPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Query' } }
+        page: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+        pages: { type: integer }
+    Recommendation:
+      type: object
+      required: [recommendation_uuid, target_query_uuid, content_type, title, rationale, target_keywords, priority]
+      properties:
+        recommendation_uuid: { type: string, format: uuid }
+        profile_uuid: { type: string, format: uuid }
+        target_query_uuid: { type: string, format: uuid }
+        target_query_text: { type: string, description: 'convenience join for the UI' }
+        content_type: { type: string, enum: [blog_post, landing_page, faq] }
+        title: { type: string }
+        rationale: { type: string }
+        target_keywords: { type: array, items: { type: string } }
+        priority: { type: string, enum: [high, medium, low] }
+        created_at: { type: string, format: date-time }
+    Dashboard:
+      type: object
+      required: [total_profiles, total_queries, avg_opportunity_score, recent_runs]
+      properties:
+        total_profiles: { type: integer }
+        total_queries: { type: integer }
+        avg_opportunity_score: { type: number, nullable: true }
+        recent_runs: { type: array, items: { $ref: '#/components/schemas/PipelineRun' }, description: 'latest 10, includes profile_name' }

@@ -27,7 +27,7 @@ def openapi_schema_to_json_schema(value):
 
 
 def test_every_endpoint_matches_contract(client, profile_data) -> None:
-    path = Path(__file__).resolve().parents[2] / "Context/api-contract/openapi.yaml"
+    path = Path(__file__).resolve().parents[2] / "docs/api/openapi.yaml"
     contract = openapi_schema_to_json_schema(yaml.safe_load(path.read_text()))
     registry = Registry().with_resource(
         "urn:aivis:contract",

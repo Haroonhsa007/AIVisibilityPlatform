@@ -1,9 +1,9 @@
 name: Backend
 on:
   push:
-    paths: ["backend/**", "Context/api-contract/**", "docker-compose.yml", ".github/workflows/backend.yml"]
+    paths: ["backend/**", "docs/api/**", "docker-compose.yml", ".github/workflows/backend.yml"]
   pull_request:
-    paths: ["backend/**", "Context/api-contract/**", "docker-compose.yml", ".github/workflows/backend.yml"]
+    paths: ["backend/**", "docs/api/**", "docker-compose.yml", ".github/workflows/backend.yml"]
 permissions:
   contents: read
 jobs:
