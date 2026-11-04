@@ -1,0 +1,217 @@
+<section aria-labelledby="queries-heading" [attr.aria-busy]="loading()">
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <h2 id="queries-heading" class="text-base font-semibold">
+      Queries <span class="ml-1 font-normal text-muted">{{ page()?.total ?? '' }}</span>
+    </h2>
+    <app-button
+      variant="secondary"
+      [loading]="exporting()"
+      [disabled]="loading() || !!error() || !(page()?.total ?? rows().length) || store.busy()"
+      (click)="exportCsv()"
+      ><ng-icon name="heroArrowDownTray" size="16" aria-hidden="true" />{{
+        exporting()
+          ? 'Exporting ' +
+            exportCount() +
+            (exportTotal() === undefined ? '' : ' / ' + exportTotal())
+          : 'Export CSV'
+      }}</app-button
+    >
+  </div>
+  @if (exportError(); as failure) {
+    <p role="alert" class="mb-4 text-sm text-danger">
+      {{ failure.message }}
+      <button type="button" class="underline" (click)="exportCsv()">Retry export</button>
+    </p>
+  }
+  <form class="panel mb-5 flex flex-wrap items-end gap-6 p-5" [formGroup]="filters">
+    <app-slider
+      class="min-w-48 flex-1"
+      label="Minimum opportunity score"
+      [step]="0.05"
+      formControlName="min_score"
+    />
+    <app-select
+      class="min-w-48"
+      label="Visibility"
+      [options]="visibilityOptions"
+      formControlName="status"
+    />
+    <button type="button" class="ui-button" data-variant="ghost" (click)="reset()">
+      Reset filters
+    </button>
+  </form>
+  @if (loading() && !page()) {
+    <div class="panel space-y-4 p-5" aria-label="Loading queries">
+      <app-skeleton variant="row" /><app-skeleton variant="row" /><app-skeleton
+        height="2rem"
+      /><app-skeleton variant="row" />
+    </div>
+  } @else if (error(); as failure) {
+    <app-error-state [message]="failure.message" (retry)="retry()" />
+  } @else if (!rows().length) {
+    <div class="panel">
+      <app-empty-state
+        [title]="filtered() ? 'No matching queries' : 'No queries yet'"
+        [message]="
+          filtered()
+            ? 'Try a lower score or a different visibility filter.'
+            : 'Run the pipeline to discover the questions people ask in your market.'
+        "
+        [actionLabel]="filtered() ? 'Reset filters' : store.busy() ? '' : 'Run pipeline'"
+        (action)="filtered() ? reset() : store.startRun()"
+      />
+    </div>
+  } @else {
+    <div class="panel">
+      <div
+        class="table-scroll"
+        tabindex="0"
+        role="region"
+        aria-label="Queries table, scroll horizontally if needed"
+      >
+        <table class="data-table queries-table">
+          <caption class="sr-only">
+            Discovered queries, estimated demand, difficulty, opportunity and visibility.
+            Opportunity scores range from zero to one.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col" class="query-text">Query</th>
+              <th
+                scope="col"
+                class="numeric"
+                [attr.aria-sort]="sortDirection('estimated_search_volume')"
+              >
+                <button
+                  class="sort-button"
+                  type="button"
+                  (click)="sortBy('estimated_search_volume')"
+                >
+                  Volume (est.)
+                  @if (params().sort === 'estimated_search_volume') {
+                    <ng-icon
+                      [name]="params().order === 'asc' ? 'heroArrowUp' : 'heroArrowDown'"
+                      size="14"
+                      aria-hidden="true"
+                    />
+                  }
+                </button>
+              </th>
+              <th
+                scope="col"
+                class="numeric"
+                [attr.aria-sort]="sortDirection('competitive_difficulty')"
+              >
+                <button
+                  class="sort-button"
+                  type="button"
+                  (click)="sortBy('competitive_difficulty')"
+                >
+                  Difficulty
+                  @if (params().sort === 'competitive_difficulty') {
+                    <ng-icon
+                      [name]="params().order === 'asc' ? 'heroArrowUp' : 'heroArrowDown'"
+                      size="14"
+                      aria-hidden="true"
+                    />
+                  }
+                </button>
+              </th>
+              <th scope="col" class="numeric" [attr.aria-sort]="sortDirection('opportunity_score')">
+                <button class="sort-button" type="button" (click)="sortBy('opportunity_score')">
+                  Opportunity
+                  @if (params().sort === 'opportunity_score') {
+                    <ng-icon
+                      [name]="params().order === 'asc' ? 'heroArrowUp' : 'heroArrowDown'"
+                      size="14"
+                      aria-hidden="true"
+                    />
+                  }
+                </button>
+              </th>
+              <th scope="col">Visibility</th>
+              <th scope="col"><span class="sr-only">Action</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.query_uuid) {
+              <tr>
+                <td class="query-text">{{ row.query_text }}</td>
+                <td class="numeric">
+                  {{
+                    row.estimated_search_volume === null ||
+                    row.estimated_search_volume === undefined
+                      ? '—'
+                      : (row.estimated_search_volume | number)
+                  }}
+                </td>
+                <td class="numeric">
+                  @if (
+                    row.competitive_difficulty === null || row.competitive_difficulty === undefined
+                  ) {
+                    —
+                  } @else {
+                    <div class="ml-auto flex items-center justify-end gap-2 lg:w-24">
+                      <progress
+                        class="hidden h-1 w-12 accent-muted lg:block"
+                        [value]="row.competitive_difficulty"
+                        max="100"
+                        [attr.aria-label]="'Difficulty for ' + row.query_text"
+                      ></progress
+                      ><span>{{ row.competitive_difficulty }}</span>
+                    </div>
+                  }
+                </td>
+                <td class="numeric"><app-score-chip [score]="row.opportunity_score" /></td>
+                <td>
+                  <app-badge
+                    [tone]="
+                      row.domain_visible === true
+                        ? 'primary'
+                        : row.domain_visible === false
+                          ? 'warning'
+                          : 'neutral'
+                    "
+                    >{{
+                      row.domain_visible === true
+                        ? 'Visible' +
+                          (row.visibility_position ? ' #' + row.visibility_position : '')
+                        : row.domain_visible === false
+                          ? 'Not visible'
+                          : 'Unknown'
+                    }}</app-badge
+                  >
+                </td>
+                <td class="action-cell">
+                  <app-button
+                    variant="ghost"
+                    title="Re-check AI visibility for this query"
+                    [loading]="rechecking().has(row.query_uuid)"
+                    [disabled]="loading() || store.busy()"
+                    (click)="recheck(row)"
+                    ><ng-icon name="heroArrowPath" size="14" aria-hidden="true" /><span
+                      class="recheck-label"
+                      >Recheck</span
+                    ><span class="sr-only"> {{ row.query_text }}</span></app-button
+                  >
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="px-5">
+        <app-paginator
+          [page]="params().page"
+          [per_page]="params().per_page"
+          [total]="page()?.total ?? rows().length"
+          (pageChange)="setPage($event)"
+          (perPageChange)="setSize($event)"
+        />
+      </div>
+    </div>
+  }
+  <p class="mt-4 text-xs leading-5 text-muted">
+    Volume, difficulty and visibility are AI-model estimates.
+  </p>
+</section>

@@ -1,0 +1,70 @@
+x-backend: &backend
+  image: ai-visibility-backend:local
+  build:
+    context: ./backend
+  env_file:
+    - path: ./backend/.env
+      required: false
+  environment:
+    DATABASE_URL: postgresql+psycopg://aivis@db:5432/ai_visibility
+    REDIS_URL: redis://redis:6379/0
+    PIPELINE_EXECUTION: queue
+    FLASK_ENV: production
+  init: true
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: aivis
+      POSTGRES_DB: ai_visibility
+      # Local demo network only; DB has no published host port or stored password.
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aivis -d ai_visibility"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  redis:
+    image: redis:7
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  api:
+    <<: *backend
+    command: ["sh", "-c", "flask db upgrade && exec gunicorn wsgi:app --workers 2 --bind 0.0.0.0:5000 --access-logfile -"]
+    ports:
+      - "127.0.0.1:${API_PORT:-5000}:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  worker:
+    <<: *backend
+    command: ["python", "worker.py"]
+    healthcheck:
+      disable: true
+    depends_on:
+      api:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  frontend:
+    image: ai-visibility-frontend:local
+    build:
+      context: ./frontend
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-4200}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

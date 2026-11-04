@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" href="data:," />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>How the platform works</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #f5f7fa;
+        color: #0f172a;
+        font:
+          17px/1.5 Arial,
+          sans-serif;
+      }
+      main {
+        max-width: 1260px;
+        margin: auto;
+        padding: 28px 36px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 30px;
+        letter-spacing: -0.7px;
+      }
+      p {
+        color: #475569;
+        margin: 8px 0 20px;
+      }
+      img {
+        display: block;
+        width: 100%;
+        height: 420px;
+        object-fit: contain;
+      }
+      dl {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+        margin: 18px 0;
+      }
+      dt {
+        font-weight: bold;
+        font-size: 17px;
+      }
+      dd {
+        margin: 8px 0;
+        color: #475569;
+        font-size: 15px;
+      }
+      footer {
+        font-size: 14px;
+        color: #475569;
+        border-top: 1px solid #cbd5e1;
+        padding-top: 15px;
+      }
+      #pipeline {
+        display: none;
+      }
+      body[data-view="pipeline"] #system {
+        display: none;
+      }
+      body[data-view="pipeline"] #pipeline {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>From a business profile to content decisions</h1>
+      <p>
+        One browser origin, a persistent API, and workers that finish the
+        expensive work.
+      </p>
+      <div id="system">
+        <img
+          src="../diagrams/architecture.svg"
+          alt="Angular connects through nginx to Flask, PostgreSQL, Redis and RQ workers, which call a provider."
+        />
+        <dl>
+          <div>
+            <dt>Frontend</dt>
+            <dd>
+              Typed services make HTTP calls. Signals render state. Polling ends
+              on a terminal run or route destruction.
+            </dd>
+          </div>
+          <div>
+            <dt>Backend</dt>
+            <dd>
+              Flask validates and queues a run. The worker orchestrates pure
+              agents and commits progress to PostgreSQL.
+            </dd>
+          </div>
+          <div>
+            <dt>Provider boundary</dt>
+            <dd>
+              The recording uses FakeLLMClient. OpenAI and Anthropic use the
+              same validated agent contract.
+            </dd>
+          </div>
+        </dl>
+      </div>
+      <div id="pipeline">
+        <img
+          src="../diagrams/pipeline.svg"
+          alt="Queued runs pass through discovery, scoring and recommendations to completed, partial or failed states."
+        />
+        <dl>
+          <div>
+            <dt>Discovery</dt>
+            <dd>
+              Generate questions and upsert them by profile and normalized
+              question text.
+            </dd>
+          </div>
+          <div>
+            <dt>Scoring</dt>
+            <dd>
+              Work in batches of five. Derive visibility and the opportunity
+              score in code.
+            </dd>
+          </div>
+          <div>
+            <dt>Recommendations</dt>
+            <dd>
+              Use the highest-scoring absent-domain queries. Validate references
+              before replacing content ideas.
+            </dd>
+          </div>
+        </dl>
+      </div>
+      <footer>
+        Visibility, volume and difficulty are estimates. This demo uses a
+        separate database and no live-provider key.
+      </footer>
+    </main>
+    <script>
+      function showView() {
+        document.body.dataset.view =
+          location.hash === "#pipeline" ? "pipeline" : "system";
+      }
+      addEventListener("hashchange", showView);
+      showView();
+    </script>
+  </body>
+</html>

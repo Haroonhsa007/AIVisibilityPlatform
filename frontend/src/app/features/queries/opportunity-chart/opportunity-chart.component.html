@@ -1,0 +1,118 @@
+<section aria-labelledby="chart-heading">
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <h2 id="chart-heading" class="text-base font-semibold">Opportunity chart</h2>
+    <p class="text-sm text-muted">
+      {{ rows().length }} of {{ page()?.total ?? rows().length }} queries
+    </p>
+  </div>
+  @if (loading()) {
+    <div class="panel p-5"><app-skeleton variant="chart" /></div>
+  } @else if (error(); as failure) {
+    <app-error-state [message]="failure.message" (retry)="retry()" />
+  } @else if (!rows().length) {
+    <div class="panel">
+      <app-empty-state
+        title="No queries to chart"
+        message="Run the pipeline to discover and score your business queries."
+        [actionLabel]="store.busy() ? '' : 'Run pipeline'"
+        (action)="store.startRun()"
+      />
+    </div>
+  } @else {
+    <div class="panel p-5">
+      <ul class="mb-5 flex flex-wrap gap-5 text-xs" aria-label="Chart legend">
+        <li class="inline-flex items-center gap-2">
+          <span
+            class="h-2.5 w-2.5 rounded-sm"
+            [style.background]="palette().visible"
+            aria-hidden="true"
+          ></span
+          >Visible
+        </li>
+        <li class="inline-flex items-center gap-2">
+          <span
+            class="h-2.5 w-2.5 rounded-sm"
+            [style.background]="palette().notVisible"
+            aria-hidden="true"
+          ></span
+          >Not visible
+        </li>
+        <li class="inline-flex items-center gap-2">
+          <span
+            class="h-2.5 w-2.5 rounded-sm"
+            [style.background]="palette().unknown"
+            aria-hidden="true"
+          ></span
+          >Not scored (no bar)
+        </li>
+      </ul>
+      @if (scrolls()) {
+        <p class="mb-3 text-xs text-muted">
+          Scroll sideways to see all {{ rows().length }} queries. Hover a bar for the full
+          question.
+        </p>
+      }
+      <div
+        class="max-h-[560px] overflow-auto"
+        tabindex="0"
+        role="region"
+        aria-label="Opportunity chart, scroll to explore queries"
+      >
+        <div class="relative" [style.height.px]="chartHeight()" [style.min-width.px]="chartWidth()">
+          <canvas
+            baseChart
+            type="bar"
+            [data]="data()"
+            [options]="options()"
+            role="img"
+            [attr.aria-label]="
+              'Opportunity scores for ' +
+              rows().length +
+              ' queries, from zero to one. Full data is in the following accessible table.'
+            "
+          ></canvas>
+        </div>
+      </div>
+      <div class="sr-only">
+        <table>
+          <caption>
+            Opportunity chart data
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Query</th>
+              <th scope="col">Opportunity score</th>
+              <th scope="col">Visibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.query_uuid) {
+              <tr>
+                <th scope="row">{{ row.query_text }}</th>
+                <td>
+                  {{
+                    row.opportunity_score === null || row.opportunity_score === undefined
+                      ? 'Not scored'
+                      : (row.opportunity_score | number: '1.3-3')
+                  }}
+                </td>
+                <td>
+                  {{
+                    row.domain_visible === null || row.domain_visible === undefined
+                      ? 'Unknown'
+                      : row.domain_visible
+                        ? 'Visible'
+                        : 'Not visible'
+                  }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    @if ((page()?.total ?? 0) > 100) {
+      <p class="mt-3 text-xs text-muted">Showing the top 100 queries by opportunity score.</p>
+    }
+  }
+</section>

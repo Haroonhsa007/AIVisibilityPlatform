@@ -1,0 +1,22 @@
+digraph Architecture {
+  graph [rankdir=TB, bgcolor="#f5f7fa", pad="0.45", nodesep="0.45", ranksep="0.75", fontname="Arial", fontsize=24, fontcolor="#0f172a", label="AI Visibility Intelligence Platform", labelloc=t];
+  node [shape=box, style="rounded,filled", fillcolor="white", color="#cbd5e1", fontname="Arial", fontsize=19, fontcolor="#0f172a", margin="0.2,0.16"];
+  edge [color="#64748b", fontname="Arial", fontsize=12, fontcolor="#475569", arrowsize=0.7];
+  ui [label="Angular browser UI\nProfiles · queries · charts\nSignals · RxJS · typed services", fillcolor="#dbeafe", color="#93c5fd"];
+  nginx [label="nginx\nStatic SPA + deep links\nSame-origin /api proxy"];
+  api [label="Flask / Gunicorn\nValidate → services → JSON\nCreate run + return 202"];
+  db [label="PostgreSQL\nProfiles · runs · queries\nContent recommendations", shape=cylinder];
+  redis [label="Redis / RQ\nQueue run UUID", shape=cylinder];
+  worker [label="RQ worker + orchestrator\nDiscovery → scoring → recommendations\nCommit stage progress + results", fillcolor="#dbeafe", color="#93c5fd"];
+  llm [label="Provider interface\nFake (offline demo)\nOpenAI / Anthropic"];
+  { rank=same; ui; nginx; api; db; }
+  { rank=same; redis; worker; llm; }
+  ui -> nginx [label="HTTP / JSON"];
+  nginx -> api [label="/api/v1"];
+  api -> db [label="read + write"];
+  api -> redis [label="enqueue"];
+  redis -> worker [label="claim job"];
+  worker -> db [label="persist results", constraint=false];
+  worker -> llm [label="validated agent calls"];
+  ui -> api [label="poll persisted run every 2 seconds", style=dashed, color="#1e40af", constraint=false];
+}

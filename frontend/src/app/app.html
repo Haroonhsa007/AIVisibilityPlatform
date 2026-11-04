@@ -1,0 +1,140 @@
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div class="min-h-screen bg-bg text-text">
+  <header
+    class="flex h-16 items-center justify-between gap-4 border-b border-border bg-surface px-4 sm:px-6"
+  >
+    <div class="flex min-w-0 items-center gap-3">
+      <button
+        type="button"
+        class="icon-button lg:hidden"
+        aria-label="Open navigation"
+        aria-haspopup="dialog"
+        [attr.aria-expanded]="drawerOpen()"
+        aria-controls="mobile-navigation"
+        (click)="openDrawer()"
+      >
+        <ng-icon name="heroBars3" size="20" aria-hidden="true" />
+      </button>
+      <a
+        routerLink="/"
+        class="inline-flex items-center gap-2.5 text-sm font-semibold tracking-tight"
+      >
+        <ng-icon name="heroChartBar" size="20" class="text-primary" aria-hidden="true" />
+        AI Visibility
+      </a>
+    </div>
+    <div role="group" aria-label="Theme" class="flex shrink-0 items-center gap-1">
+      <button
+        type="button"
+        class="icon-button"
+        title="System theme"
+        aria-label="System theme"
+        [attr.aria-pressed]="themeService.theme() === 'system'"
+        (click)="themeService.setTheme('system')"
+      >
+        <ng-icon name="heroComputerDesktop" size="18" aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        class="icon-button"
+        title="Light theme"
+        aria-label="Light theme"
+        [attr.aria-pressed]="themeService.theme() === 'light'"
+        (click)="themeService.setTheme('light')"
+      >
+        <ng-icon name="heroSun" size="18" aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        class="icon-button"
+        title="Dark theme"
+        aria-label="Dark theme"
+        [attr.aria-pressed]="themeService.theme() === 'dark'"
+        (click)="themeService.setTheme('dark')"
+      >
+        <ng-icon name="heroMoon" size="18" aria-hidden="true" />
+      </button>
+    </div>
+  </header>
+  <!-- At 1280px: 224px navigation + (32px + 992px canvas + 32px) = 1280px. -->
+  <div class="min-h-[calc(100dvh-64px)] lg:grid lg:grid-cols-[224px_1fr]">
+    <aside class="hidden border-r border-border lg:block" aria-label="Sidebar">
+      <nav aria-label="Main navigation" class="flex flex-col gap-1 p-4">
+        <a
+          routerLink="/"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          ariaCurrentWhenActive="page"
+          class="nav-link"
+        >
+          <ng-icon name="heroSquares2x2" size="18" aria-hidden="true" />Dashboard
+        </a>
+        <a
+          routerLink="/profiles/new"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          class="nav-link"
+          title="New profile"
+        >
+          <ng-icon name="heroBuildingOffice2" size="18" aria-hidden="true" />Profiles
+        </a>
+      </nav>
+    </aside>
+    <main
+      id="main-content"
+      tabindex="-1"
+      class="min-w-0 p-4 sm:p-8"
+      [attr.inert]="drawerOpen() ? '' : null"
+    >
+      <router-outlet />
+    </main>
+  </div>
+</div>
+<ng-template cdkPortal>
+  <section
+    id="mobile-navigation"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="drawer-title"
+    cdkTrapFocus
+    [cdkTrapFocusAutoCapture]="true"
+    class="h-full w-full border-r border-border bg-surface p-4 text-text shadow-lg"
+  >
+    <div class="mb-4 flex items-center justify-between">
+      <h2 id="drawer-title" class="text-sm font-semibold">AI Visibility</h2>
+      <button
+        type="button"
+        class="icon-button"
+        aria-label="Close navigation"
+        (click)="closeDrawer()"
+      >
+        <ng-icon name="heroXMark" size="20" aria-hidden="true" />
+      </button>
+    </div>
+    <nav aria-label="Mobile navigation" class="flex flex-col gap-1">
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+        class="nav-link"
+        (click)="closeDrawer()"
+      >
+        <ng-icon name="heroSquares2x2" size="18" aria-hidden="true" />Dashboard
+      </a>
+      <a
+        routerLink="/profiles/new"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+        class="nav-link"
+        title="New profile"
+        (click)="closeDrawer()"
+      >
+        <ng-icon name="heroBuildingOffice2" size="18" aria-hidden="true" />Profiles
+      </a>
+    </nav>
+  </section>
+</ng-template>
+@defer (on idle) {
+  <app-toast-outlet />
+}

@@ -1,0 +1,122 @@
+<div class="page-heading">
+  <h1>Dashboard</h1>
+  <a routerLink="/profiles/new" class="ui-button" data-variant="primary"
+    ><ng-icon name="heroPlus" size="18" aria-hidden="true" />Add new business profile</a
+  >
+</div>
+@if (error(); as failure) {
+  <div class="mb-5"><app-error-state [message]="failure.message" (retry)="retry()" /></div>
+}
+@if (loading() && !data()) {
+  <div class="metric-strip" aria-label="Loading summary">
+    <app-skeleton variant="stat" /><app-skeleton variant="stat" /><app-skeleton variant="stat" />
+  </div>
+  <app-skeleton height="14rem" />
+} @else if (data(); as result) {
+  <dl class="metric-strip">
+    <div>
+      <dt>Business profiles</dt>
+      <dd>{{ result.dashboard.total_profiles | number }}</dd>
+    </div>
+    <div>
+      <dt>Queries discovered</dt>
+      <dd>{{ result.dashboard.total_queries | number }}</dd>
+    </div>
+    <div>
+      <dt>Average opportunity score</dt>
+      <dd>
+        {{
+          result.dashboard.avg_opportunity_score === null
+            ? '—'
+            : (result.dashboard.avg_opportunity_score | number: '1.2-2')
+        }}
+        @if (result.dashboard.avg_opportunity_score !== null) {
+          <span class="metric-unit"> / 1</span>
+        }
+      </dd>
+    </div>
+  </dl>
+  @if (result.dashboard.total_profiles === 0) {
+    <section class="panel">
+      <app-empty-state
+        title="Track your first business"
+        message="Add a business profile to discover queries and measure its AI visibility."
+      />
+      <div class="pb-8 text-center">
+        <a routerLink="/profiles/new" class="ui-button" data-variant="primary"
+          >Add business profile</a
+        >
+      </div>
+    </section>
+  } @else {
+    <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)]">
+      <section class="panel min-w-0">
+        <div class="panel-heading"><h2>Recent pipeline runs</h2></div>
+        @if (result.dashboard.recent_runs.length) {
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Business</th>
+                  <th scope="col">Status</th>
+                  <th scope="col" class="numeric">Scored</th>
+                  <th scope="col" class="numeric">Tokens</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (run of result.dashboard.recent_runs; track run.run_uuid) {
+                  <tr>
+                    <td>
+                      <a class="text-link" [routerLink]="['/profiles', run.profile_uuid]">{{
+                        run.profile_name || 'Open profile'
+                      }}</a
+                      ><span class="cell-meta" [title]="(run.created_at | date: 'medium') ?? ''">{{
+                        run.created_at | relativeTime
+                      }}</span>
+                    </td>
+                    <td>
+                      <app-run-status [status]="run.status" />
+                      @if (run.error_message && run.status !== 'completed') {
+                        <span class="cell-meta cell-reason" [title]="run.error_message">{{
+                          run.error_message
+                        }}</span>
+                      }
+                    </td>
+                    <td class="numeric">
+                      {{ run.queries_scored | number }} / {{ run.queries_discovered | number }}
+                    </td>
+                    <td class="numeric">{{ run.tokens_used | number }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="panel-empty">No pipeline runs yet. Open a profile to start one.</p>
+        }
+      </section>
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Your profiles</h2>
+          <span class="text-sm text-muted">{{
+            result.profiles.total ?? result.dashboard.total_profiles
+          }}</span>
+        </div>
+        <ul class="divide-y divide-border">
+          @for (profile of result.profiles.items ?? []; track profile.profile_uuid) {
+            <li>
+              <a
+                class="flex min-h-20 items-center justify-between gap-4 px-5 py-4 hover:bg-bg"
+                [routerLink]="['/profiles', profile.profile_uuid]"
+                ><span class="min-w-0"
+                  ><span class="block truncate text-sm font-medium">{{ profile.name }}</span
+                  ><span class="cell-meta truncate">{{ profile.domain }}</span></span
+                ><ng-icon name="heroArrowRight" size="18" aria-hidden="true"
+              /></a>
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+  }
+}

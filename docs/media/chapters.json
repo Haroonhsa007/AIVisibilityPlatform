@@ -1,0 +1,41 @@
+{
+  "duration": 137.36,
+  "chapters": [
+    {
+      "title": "Start with an empty dashboard",
+      "time": 0.12
+    },
+    {
+      "title": "Create and validate a business profile",
+      "time": 7.79
+    },
+    {
+      "title": "Queue and complete the pipeline",
+      "time": 30.79
+    },
+    {
+      "title": "Filter, sort and page through queries",
+      "time": 42.75
+    },
+    {
+      "title": "Recheck one row and export all filtered records",
+      "time": 65.37
+    },
+    {
+      "title": "Inspect the opportunity chart and themes",
+      "time": 79.32
+    },
+    {
+      "title": "Review actionable content recommendations",
+      "time": 93.63
+    },
+    {
+      "title": "Architecture: browser, API, queue and persistence",
+      "time": 111.33
+    },
+    {
+      "title": "Pipeline stages and honest failure states",
+      "time": 119.43
+    }
+  ]
+}

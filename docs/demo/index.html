@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" href="data:," />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A captioned walkthrough of the AI Visibility Intelligence Platform, with chapters, architecture diagrams and a technical guide."
+    />
+    <title>AI Visibility · Product walkthrough</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f7fa;
+        --surface: #fff;
+        --ink: #0f172a;
+        --muted: #475569;
+        --line: #cbd5e1;
+        --accent: #1e40af;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          16px/1.6 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 1160px;
+        margin: auto;
+        padding: 40px 24px 64px;
+      }
+      h1 {
+        font-size: 32px;
+        line-height: 1.15;
+        letter-spacing: -0.8px;
+        margin: 0 0 12px;
+      }
+      h2 {
+        font-size: 22px;
+        line-height: 1.3;
+        margin: 0 0 14px;
+      }
+      h3 {
+        font-size: 17px;
+        margin: 0 0 8px;
+      }
+      p {
+        margin: 0 0 16px;
+        color: var(--muted);
+      }
+      a {
+        color: var(--accent);
+        text-underline-offset: 3px;
+      }
+      a:focus-visible,
+      button:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 4px;
+      }
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 22px;
+        margin: 18px 0 24px;
+      }
+      .video-frame {
+        background: #0b1220;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      video {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1280/900;
+        background: #0b1220;
+      }
+      .meta {
+        font-size: 14px;
+        margin: 12px 0 24px;
+      }
+      .chapters {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      button {
+        display: flex;
+        width: 100%;
+        align-items: baseline;
+        gap: 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 12px;
+        text-align: left;
+        background: var(--surface);
+        color: var(--ink);
+        font: inherit;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--accent);
+      }
+      button[aria-current="true"] {
+        background: var(--accent);
+        color: white;
+      }
+      .time {
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .section {
+        margin-top: 40px;
+      }
+      .diagram {
+        display: block;
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+      }
+      .notes {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+      }
+      .notes p {
+        font-size: 15px;
+      }
+      details {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+      }
+      summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .stills {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+        margin-top: 20px;
+      }
+      .stills figure {
+        margin: 0;
+      }
+      .stills img {
+        display: block;
+        width: 100%;
+        border: 1px solid var(--line);
+      }
+      figcaption {
+        font-size: 14px;
+        color: var(--muted);
+        padding-top: 8px;
+      }
+      footer {
+        margin-top: 36px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      #player-status {
+        min-height: 1.6em;
+        margin: 6px 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      @media (max-width: 760px) {
+        main {
+          padding: 28px 16px;
+        }
+        h1 {
+          font-size: 27px;
+        }
+        .chapters {
+          grid-template-columns: 1fr 1fr;
+        }
+        .notes,
+        .stills {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 420px) {
+        .chapters {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>AI Visibility, from profile to recommendation</h1>
+        <p>
+          Follow the product flow, then see the frontend, API, queue, worker and
+          provider boundaries.
+        </p>
+        <nav class="links" aria-label="Documentation">
+          <a href="../WALKTHROUGH.md">Ten-minute technical guide</a>
+          <a href="../LOOM_SCRIPT.md">Ten-minute Loom narration</a>
+          <a href="../media/platform-walkthrough.mp4" download>Download MP4</a>
+          <a href="../media/transcript.md">Text transcript</a>
+        </nav>
+      </header>
+      <section aria-labelledby="video-title">
+        <h2 id="video-title">Watch the workflow</h2>
+        <div class="video-frame">
+          <video
+            id="tour"
+            controls
+            playsinline
+            preload="metadata"
+            poster="../screenshots/09-dashboard-results.png"
+            aria-label="Captioned product walkthrough using an isolated offline-provider stack"
+          >
+            <source src="../media/platform-walkthrough.mp4" type="video/mp4" />
+            Your browser cannot play this video.
+            <a href="../media/platform-walkthrough.mp4">Download the MP4</a> or
+            read the <a href="../media/transcript.md">transcript</a>.
+          </video>
+        </div>
+        <p class="meta">
+          Silent recording with captions in the picture ·
+          <span id="duration-label">2:17</span> · 1280 × 900 · Recorded November
+          4, 2026
+        </p>
+        <p>
+          The recording uses the real application with a separate fake-provider
+          API, PostgreSQL database and RQ worker. No live model was called. The
+          demonstrated run returned 12 questions, 3 recommendations and 750
+          simulated tokens.
+        </p>
+        <h3>Jump to a chapter</h3>
+        <ol class="chapters" id="chapters">
+          <li>
+            <button
+              type="button"
+              data-time="0.12"
+              data-title="Start with an empty dashboard"
+            >
+              <span class="time">0:00</span
+              ><span>Start with an empty dashboard</span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              data-time="7.79"
+              data-title="Create and validate a business profile"
+            >
+              <span class="time">0:07</span
+              ><span>Create and validate a business profile</span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              data-time="30.79"
+              data-title="Queue and complete the pipeline"
+            >
+              <span class="time">0:30</span
+              ><span>Queue and complete the pipeline</span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              data-time="42.75"
+              data-title="Filter, sort and page through queries"
+            >
+              <span class="time">0:42</span
+              ><span>Filter, sort and page through queries</span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              data-time="65.37"
+              data-title="Recheck one row and export all filtered records"
+            >
+              <span class="time">1:05</span
+              ><span>Recheck one row and export all filtered records</span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              data-time="79.32"
+              data-title="Inspect the opportunity chart and themes"
+            >
+              <span class="time">1:19</span
+              ><span>Inspect the opportunity chart and themes</span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              data-time="93.63"
+              data-title="Review actionable content recommendations"
+            >
+              <span class="time">1:33</span
+              ><span>Review actionable content recommendations</span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              data-time="111.33"
+              data-title="Architecture: browser, API, queue and persistence"
+            >
+              <span class="time">1:51</span
+              ><span>Architecture: browser, API, queue and persistence</span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              data-time="119.43"
+              data-title="Pipeline stages and honest failure states"
+            >
+              <span class="time">1:59</span
+              ><span>Pipeline stages and honest failure states</span>
+            </button>
+          </li>
+        </ol>
+        <p id="player-status" role="status" aria-live="polite"></p>
+      </section>
+      <section class="section" aria-labelledby="architecture-title">
+        <h2 id="architecture-title">How the pieces fit together</h2>
+        <a
+          href="../diagrams/architecture.svg"
+          aria-label="Open full system architecture diagram"
+          ><img
+            class="diagram"
+            src="../diagrams/architecture.svg"
+            alt="Angular reaches Flask through nginx. Flask reads PostgreSQL and queues Redis jobs. The RQ worker invokes provider adapters and persists results."
+        /></a>
+        <div class="notes section">
+          <div>
+            <h3>Frontend</h3>
+            <p>
+              Typed services own HTTP; signals render profile/run state. Polling
+              stops at terminal status or route destruction. URL-backed filters
+              avoid redundant requests, and a bounded dashboard cache makes
+              return navigation stable.
+            </p>
+          </div>
+          <div>
+            <h3>Backend</h3>
+            <p>
+              Flask validates and persists. An RQ worker orchestrates discovery,
+              scoring and recommendations. Pure agents validate provider output;
+              code derives visibility and opportunity scores.
+            </p>
+          </div>
+        </div>
+        <a
+          href="../diagrams/pipeline.svg"
+          aria-label="Open full pipeline lifecycle diagram"
+          ><img
+            class="diagram"
+            src="../diagrams/pipeline.svg"
+            alt="A queued run passes through discovery, scoring and recommendations, ending completed, partial or failed."
+        /></a>
+      </section>
+      <section class="section" aria-labelledby="stills-title">
+        <h2 id="stills-title">Prefer still frames?</h2>
+        <details>
+          <summary>Open the product flow in screenshots</summary>
+          <div class="stills">
+            <figure>
+              <a href="../screenshots/01-dashboard-empty.png"
+                ><img
+                  loading="lazy"
+                  src="../screenshots/01-dashboard-empty.png"
+                  alt="Empty dashboard with zero totals"
+              /></a>
+              <figcaption>1. Start from an empty database.</figcaption>
+            </figure>
+            <figure>
+              <a href="../screenshots/02-profile-form.png"
+                ><img
+                  loading="lazy"
+                  src="../screenshots/02-profile-form.png"
+                  alt="Completed profile form with competitor chips"
+              /></a>
+              <figcaption>
+                2. Create and validate a business profile.
+              </figcaption>
+            </figure>
+            <figure>
+              <a href="../screenshots/04-queries-light.png"
+                ><img
+                  loading="lazy"
+                  src="../screenshots/04-queries-light.png"
+                  alt="Completed pipeline and populated queries"
+              /></a>
+              <figcaption>
+                3. Follow the run and inspect persisted results.
+              </figcaption>
+            </figure>
+            <figure>
+              <a href="../screenshots/05-filtered-queries.png"
+                ><img
+                  loading="lazy"
+                  src="../screenshots/05-filtered-queries.png"
+                  alt="Query table narrowed by score and visibility"
+              /></a>
+              <figcaption>4. Filter, sort, recheck and export.</figcaption>
+            </figure>
+            <figure>
+              <a href="../screenshots/06-opportunity-chart.png"
+                ><img
+                  loading="lazy"
+                  src="../screenshots/06-opportunity-chart.png"
+                  alt="Opportunity chart with blue and orange bars"
+              /></a>
+              <figcaption>
+                5. Compare the highest-opportunity questions.
+              </figcaption>
+            </figure>
+            <figure>
+              <a href="../screenshots/08-recommendations.png"
+                ><img
+                  loading="lazy"
+                  src="../screenshots/08-recommendations.png"
+                  alt="Content recommendations and priority controls"
+              /></a>
+              <figcaption>
+                6. Review content ideas with a rationale and target question.
+              </figcaption>
+            </figure>
+          </div>
+        </details>
+      </section>
+      <footer>
+        Volume, difficulty and visibility are model estimates. This
+        demonstration does not measure live assistant traffic or establish
+        live-provider authentication. See the technical guide for limitations,
+        failure diagnosis and verification evidence.
+      </footer>
+    </main>
+    <script>
+      const video = document.getElementById("tour");
+      const buttons = [...document.querySelectorAll("#chapters button")];
+      const status = document.getElementById("player-status");
+      const format = (value) =>
+        `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, "0")}`;
+      video.addEventListener("loadedmetadata", () => {
+        document.getElementById("duration-label").textContent = format(
+          video.duration,
+        );
+      });
+      for (const button of buttons)
+        button.addEventListener("click", () => {
+          video.currentTime = Number(button.dataset.time);
+          video.scrollIntoView({
+            block: "center",
+            behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+              ? "auto"
+              : "smooth",
+          });
+          status.textContent = `Playing: ${button.dataset.title}`;
+          video.play().catch(() => {
+            status.textContent = "Press Play to continue from this chapter.";
+          });
+        });
+      video.addEventListener("timeupdate", () => {
+        let current;
+        for (const button of buttons)
+          if (Number(button.dataset.time) <= video.currentTime)
+            current = button;
+        for (const button of buttons) {
+          if (button === current) button.setAttribute("aria-current", "true");
+          else button.removeAttribute("aria-current");
+        }
+      });
+      video.addEventListener("error", () => {
+        status.textContent =
+          "Video could not load. Use Download MP4 or the text transcript.";
+      });
+    </script>
+  </body>
+</html>
